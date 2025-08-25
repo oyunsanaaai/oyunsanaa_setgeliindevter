@@ -1,13 +1,13 @@
 /* ----- ТОГТМОЛ ----- */
-const TOTAL_PAGES = 64;                     // Нийт хуудас
-const IMG_PATH = (i)=>`pages/${i}.png`;     // Зургийн зам
+const TOTAL_Page = 64;                     // Нийт хуудас
+const IMG_PATH = (i)=>`Page/${i}.png`;     // Зургийн зам
 const STORE_KEY = 'oy_book_v1';             // localStorage түлхүүр
 
 /* Хуудас төрөл (доод талын жижиг шошго) — хүсвэл зас */
-const PAGE_TAGS = {
+const Page_TAGS = {
   1:'Нүүр', 2:'Нүүр', 3:'Нүүр',
   4:'Төгсгөл',5:'Төгсгөл',6:'Төгсгөл',7:'Төгсгөл',
-  9:'Гарчиг',
+  47:'Гарчиг',
   10:'Миний ертөнц',11:'Миний ертөнц',12:'Миний ертөнц',13:'Миний ертөнц',14:'Миний ертөнц',
   15:'Амьдралын дурсамж',16:'Амьдралын дурсамж',17:'Амьдралын дурсамж',18:'Амьдралын дурсамж',19:'Амьдралын дурсамж',
   20:'Талархал',21:'Талархал',22:'Талархал',23:'Талархал',24:'Талархал',
@@ -15,7 +15,7 @@ const PAGE_TAGS = {
   30:'Ухаарал',31:'Ухаарал',32:'Ухаарал',33:'Ухаарал',34:'Ухаарал',
   35:'Захидал',36:'Захидал',37:'Захидал',38:'Захидал',39:'Захидал',
   40:'Гомдол',41:'Гомдол',42:'Гомдол',43:'Гомдол',44:'Гомдол',
-  45:'Тэмдэглэл',46:'Тэмдэглэл',47:'Тэмдэглэл',48:'Тэмдэглэл',49:'Тэмдэглэл',50:'Тэмдэглэл',
+  45:'Тэмдэглэл',46:'Тэмдэглэл',8:'Тэмдэглэл',48:'Тэмдэглэл',49:'Тэмдэглэл',50:'Тэмдэглэл',
   56:'Баярт мөч',57:'Баярт мөч',58:'Баярт мөч',59:'Баярт мөч',60:'Баярт мөч',
   61:'Таны төрөл',62:'Таны төрөл',63:'Таны төрөл',64:'Таны төрөл'
 };
@@ -35,7 +35,7 @@ function loadDB(){
     const raw = localStorage.getItem(STORE_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
     // бүх хуудсанд хоосон массив бэлдье
-    for(let i=1;i<=TOTAL_PAGES;i++){
+    for(let i=1;i<=TOTAL_Page;i++){
       if(!parsed[i]) parsed[i] = { texts:[] };
     }
     return parsed;
@@ -46,12 +46,12 @@ function saveDB(){ localStorage.setItem(STORE_KEY, JSON.stringify(db)); }
 function initGrid(){
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
-  for(let i=1;i<=TOTAL_PAGES;i++){
+  for(let i=1;i<=TOTAL_Page;i++){
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
       <img class="thumb" src="${IMG_PATH(i)}" alt="page ${i}" onerror="this.style.opacity='.2'"/>
-      <div class="meta"><b>#${i}</b><span>${PAGE_TAGS[i]||''}</span></div>
+      <div class="meta"><b>#${i}</b><span>${Page_TAGS[i]||''}</span></div>
     `;
     card.addEventListener('click', ()=>openEditor(i));
     grid.appendChild(card);
@@ -88,23 +88,23 @@ function hookEditor(){
 }
 
 function openEditor(n){
-  currentPage = n;
-  document.getElementById('edPageNo').textContent = n;
+  currentPAGE = n;
+  document.getElementById('edPAGENo').textContent = n;
   const wrap = document.getElementById('canvasWrap');
   wrap.innerHTML = '';
-  const page = document.createElement('div');
-  page.className = 'page';
+  const Page = document.createElement('div');
+  page.className = 'Page';
   page.style.backgroundImage = `url(${IMG_PATH(n)})`;
-  wrap.appendChild(page);
+  wrap.appendChild(Page);
 
   // одоо байгаа боксууд
-  (db[n]?.texts || []).forEach(t => page.appendChild(makeBox(t)));
+  (db[n]?.texts || []).forEach(t => Page.appendChild(makeBox(t)));
 
   document.getElementById('editor').showModal();
 }
 
 function addTextBox(){
-  const page = document.querySelector('.page');
+  const Page = document.querySelector('.Page');
   const t = { x:40, y:40, w:260, h:80, fs:16, color:'#111111', txt:'Энд бичнэ…' };
   page.appendChild(makeBox(t));
 }
@@ -156,8 +156,8 @@ function makeBox(t){
 
 function saveCurrent(){
   const n = currentPage;
-  const page = document.querySelector('.page');
-  const boxes = [...page.querySelectorAll('.box')];
+  const Page = document.querySelector('.page');
+  const boxes = [.Page.querySelectorAll('.box')];
   db[n] = { texts: boxes.map(b => ({
     x: b.offsetLeft, y: b.offsetTop, w: b.offsetWidth, h: b.offsetHeight,
     fs: parseInt(getComputedStyle(b).fontSize,10),
@@ -180,10 +180,10 @@ async function exportPDF(){
   const pw = pdf.internal.pageSize.getWidth();
   const ph = pdf.internal.pageSize.getHeight();
 
-  for(let i=1;i<=TOTAL_PAGES;i++){
+  for(let i=1;i<=TOTAL_Page;i++){
     // түр DOM
     const stage = document.createElement('div');
-    stage.className = 'page';
+    stage.className = 'Page';
     stage.style.width = '794px';            // ~A4 @96dpi
     stage.style.height = '1123px';
     stage.style.backgroundImage = `url(${IMG_PATH(i)})`;
@@ -204,7 +204,7 @@ async function exportPDF(){
     const img = canvas.toDataURL('image/png');
     pdf.addImage(img,'PNG',0,0,pw,ph);
     document.body.removeChild(stage);
-    if(i<TOTAL_PAGES) pdf.addPage();
+    if(i<TOTAL_Page) pdf.addPAGE();
   }
   pdf.save('oyunsanaa-book.pdf');
 }
