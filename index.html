@@ -1,24 +1,44 @@
-const modal = document.getElementById("modal");
-const modalBody = document.getElementById("modalBody");
-const closeBtn = document.getElementById("closeBtn");
+<!doctype html>
+<html lang="mn">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Оюунсанаа · Сэтгэлийн дэвтэр → Ном</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- PDF / зураг болгох -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">Оюунсанаа</div>
+  <div class="path">Сэтгэлийн дэвтэр → <b>Ном</b></div>
+  <div class="actions">
+    <button id="btnExport" class="btn">Экспорт (JSON)</button>
+    <button id="btnImport" class="btn btn-ghost">Импорт (JSON)</button>
+    <button id="btnPDF" class="btn btn-primary">PDF хэвлэх</button>
+    <input id="fileImport" type="file" accept="application/json" hidden />
+  </div>
+</header>
 
-const menuContent = {
-  freedom: "<h2>Санхүүгийн эрх чөлөө</h2><p>Зорилгоо бичиж, мөрөөдлөө тодорхойл. Орлого, хадгаламж, нэмэлт орлого олох боломжоо жагсаа.</p>",
-  record: "<h2>Бүртгэл</h2><p>Дуу хоолой эсвэл бичвэрээр орлого/зарлага бүртгэ.</p>",
-  report: "<h2>Тайлан</h2><p>Сарын орлого, зарлага, үлдэгдэл, ангилал тус бүрээр харах боломжтой.</p>",
-  plan: "<h2>Төлөвлөгөө</h2><p>Орлого, хадгаламж ≥1%, өр/лизинг төлөлтөө урьдчилан тооц.</p>",
-  savings: "<h2>Хадгаламж</h2><p>Зорилго бүрээ нэмээд ахиц дэвшлээ хяна.</p>",
-  settings: "<h2>Тохиргоо</h2><p>Хувийн тохиргоо, хэл, валют, theme сонголт хийх боломжтой.</p>"
-};
+<main class="wrap">
+  <div class="hint">Хуудсыг дарж нээгээд — <b>Текст нэмэх</b> дээр дарж бичнэ.</div>
+  <div id="grid" class="grid"></div>
+</main>
 
-document.querySelectorAll(".menu-card").forEach(card => {
-  card.addEventListener("click", () => {
-    const menu = card.dataset.menu;
-    modalBody.innerHTML = menuContent[menu] || "<p>Контент алга</p>";
-    modal.classList.remove("hidden");
-  });
-});
+<!-- Засварлагч -->
+<dialog id="editor" class="editor">
+  <div class="ed-toolbar">
+    <div class="ed-title">Хуудас <span id="edPageNo"></span></div>
+    <div class="ed-buttons">
+      <button id="btnAddText" class="btn">Текст нэмэх</button>
+      <button id="btnSave" class="btn btn-primary">Хадгалах</button>
+      <button id="btnClose" class="btn btn-ghost">Хаах</button>
+    </div>
+  </div>
+  <div id="canvasWrap" class="canvas"></div>
+</dialog>
 
-closeBtn.addEventListener("click", () => {
-  modal.classList.add("hidden");
-});
+<script src="script.js"></script>
+</body>
+</html>
