@@ -1,7 +1,24 @@
 /* ----- ТОГТМОЛ ----- */
 const TOTAL_PAGES = 64;                     // Нийт хуудас
-const IMG_PATH = (i)=>`pages/${i}.png`;     // Зургийн зам
 const STORE_KEY = 'oy_book_v1';             // localStorage түлхүүр
+
+// Зургийн нэр таарахгүй тохиолдолд уян хатан хайлт (Canva-аас янз бүр ирдэг)
+function imgCandidates(i){
+  const n2 = String(i).padStart(2,'0');
+  return [
+    `pages/${i}.png`, `pages/${i}.PNG`,
+    `pages/${n2}.png`, `pages/${n2}.PNG`,
+    `pages/Page ${i}.png`, `pages/page ${i}.png`,
+    `pages/page-${i}.png`, `pages/page-${n2}.png`,
+    `pages/${i}.jpg`, `pages/${n2}.jpg`
+  ];
+}
+function setSmartSrc(img, i){
+  const c = imgCandidates(i);
+  let k = 0;
+  img.src = c[k];
+  img.onerror = () => { k++; if (k < c.length) img.src = c[k]; else img.style.opacity = '.2'; };
+}
 
 /* Хуудас төрөл (доод талын жижиг шошго) — хүсвэл зас */
 const PAGE_TAGS = {
@@ -49,10 +66,17 @@ function initGrid(){
   for(let i=1;i<=TOTAL_PAGES;i++){
     const card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = `
-      <img class="thumb" src="${IMG_PATH(i)}" alt="page ${i}" onerror="this.style.opacity='.2'"/>
-      <div class="meta"><b>#${i}</b><span>${PAGE_TAGS[i]||''}</span></div>
-    `;
+
+    const img = document.createElement('img');
+    img.className = 'thumb';
+    setSmartSrc(img, i);   // ← файлын нэр ямар ч хэлбэртэй байсан олно
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.innerHTML = `<b>#${i}</b><span>${PAGE_TAGS[i]||''}</span>`;
+
+    card.appendChild(img);
+    card.appendChild(meta);
     card.addEventListener('click', ()=>openEditor(i));
     grid.appendChild(card);
   }
@@ -94,7 +118,19 @@ function openEditor(n){
   wrap.innerHTML = '';
   const page = document.createElement('div');
   page.className = 'page';
-  page.style.backgroundImage = `url(${IMG_PATH(n)})`;
+  // Үндсэн зураг
+  page.style.backgroundImage = `url(${imgCandidates(n)[0]})`;
+  // Хэрэв анхны нэршил таарахгүй бол смарт ачаалалт
+  const probe = new Image();
+  probe.onload = ()=> page.style.backgroundImage = `url(${probe.src})`;
+  probe.onerror = ()=>{ /* үлдээнэ */ };
+  // туршиж үзэх
+  (function tryCandidates(){
+    const c = imgCandidates(n);
+    let k=0; probe.src = c[k];
+    probe.onerror = ()=>{ k++; if(k<c.length) probe.src = c[k]; };
+  })();
+
   wrap.appendChild(page);
 
   // одоо байгаа боксууд
@@ -186,14 +222,24 @@ async function exportPDF(){
     stage.className = 'page';
     stage.style.width = '794px';            // ~A4 @96dpi
     stage.style.height = '1123px';
-    stage.style.backgroundImage = `url(${IMG_PATH(i)})`;
+    // background зураг уян хатан
+    (function tryBG(){
+      const c = imgCandidates(i);
+      let k=0; stage.style.backgroundImage = `url(${c[k]})`;
+      const probe = new Image();
+      probe.onload = ()=> stage.style.backgroundImage = `url(${probe.src})`;
+      probe.onerror = ()=>{ k++; if(k<c.length) probe.src = c[k]; };
+      probe.src = c[k];
+    })();
 
     (db[i]?.texts||[]).forEach(t=>{
       const b = document.createElement('div');
-      b.className='box'; b.style.border='none'; b.style.background='transparent';
+      b.className='box'; 
+      b.style.border='none'; b.style.background='transparent';
       Object.assign(b.style,{
+        position:'absolute',
         left:t.x+'px', top:t.y+'px', width:t.w+'px', height:t.h+'px',
-        fontSize:t.fs+'px', color:t.color
+        fontSize:t.fs+'px', color:t.color, padding:'8px'
       });
       b.textContent = t.txt||'';
       stage.appendChild(b);
